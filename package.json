@@ -1,0 +1,30 @@
+{
+  "name": "mpm",
+  "version": "0.0.1",
+  "description": "Minimal package manager",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sabertazimi/mpm.git"
+  },
+  "keywords": [
+    "yarn",
+    "npm",
+    "package manager"
+  ],
+  "author": "sabertazimi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sabertazimi/mpm/issues"
+  },
+  "homepage": "https://github.com/sabertazimi/mpm#readme",
+  "dependencies": {
+    "fs-extra": "^6.0.1",
+    "node-fetch": "^2.1.2",
+    "semver": "^5.5.0"
+  }
+}
