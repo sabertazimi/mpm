@@ -1,6 +1,7 @@
 const fs = require('fs-extra');
 const fetch = require('node-fetch');
 const semver = require('semver');
+const REGISTRY_URL = 'https://registry.npm.taobao.org';
 
 async function fetchPackage({ name, reference }){
     if ([`/`, `./`, `../`].some(prefix => reference.startsWith(prefix))) {
@@ -10,7 +11,7 @@ async function fetchPackage({ name, reference }){
     if (semver.valid(reference)) {
         return await fetchPackage({
             name,
-            reference: `https://registry.npm.taobao.org/${name}/-/${name}-${reference}.tgz`
+            reference: `${REGISTRY_URL}/${name}/-/${name}-${reference}.tgz`
         });
     }
 
@@ -22,3 +23,8 @@ async function fetchPackage({ name, reference }){
 
     return await response.buffer();
 }
+
+fetchPackage({
+    name: 'react',
+    reference: '16.4.0'
+}).then(buffer => console.log(buffer));
