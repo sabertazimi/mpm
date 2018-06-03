@@ -1,0 +1,2 @@
+# mpm
+Minimal package manager
