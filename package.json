@@ -24,9 +24,8 @@
   "homepage": "https://github.com/sabertazimi/mpm#readme",
   "jest": {
     "collectCoverageFrom": [
-      "**/*.{js}",
-      "!**/node_modules/**",
-      "!**/vendor/**"
+      "src/*.{js}",
+      "!**/index.js"
     ]
   },
   "dependencies": {
