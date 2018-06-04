@@ -36,7 +36,27 @@ describe('Mpm Utils', () => {
     });
   });
 
-  it('fetchPackage', () => {
+  it('getPinnedReference not found pacakge', () => {
+    expect.assertions(1);
+    return mpm.getPinnedReference({
+      name: 'reacttt',
+      reference: '~15.3.0'
+    }).catch((error) => {
+      expect(error).toEqual(new Error(`Couldn't fetch package "reacttt"`));
+    });
+  });
+
+  it('getPinnedReference not found version', () => {
+    expect.assertions(1);
+    return mpm.getPinnedReference({
+      name: 'react',
+      reference: '~99.0.0'
+    }).catch((error) => {
+      expect(error).toEqual(new Error(`Couldn't find a version matching "~99.0.0" for package  "react"`));
+    });
+  });
+
+  it('fetchPackage react-16.4.0', () => {
     expect.assertions(2);
     return mpm.fetchPackage({
       name: 'react',
@@ -44,6 +64,27 @@ describe('Mpm Utils', () => {
     }).then((buffer) => {
       expect(Buffer.isBuffer(buffer)).toBe(true);
       expect(buffer.length).toBeGreaterThan(255);
+    });
+  });
+
+  it('fetchPackage local file', () => {
+    expect.assertions(2);
+    return mpm.fetchPackage({
+      name: 'mpm',
+      reference: './src/mpm.js'
+    }).then((buffer) => {
+      expect(Buffer.isBuffer(buffer)).toBe(true);
+      expect(buffer.length).toBeGreaterThan(255);
+    });
+  });
+
+  it('fetchPackage not found package', () => {
+    expect.assertions(1);
+    return mpm.fetchPackage({
+      name: 'react',
+      reference: '99.0.0'
+    }).catch((error) => {
+      expect(error instanceof Error).toBe(true);
     });
   });
 });
