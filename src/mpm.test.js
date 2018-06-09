@@ -2,7 +2,7 @@ const Mpm = require('./mpm.js');
 
 describe('Mpm Utils', () => {
   const mpm = new Mpm();
-
+  
   it('getPinnedReference ~version', () => {
     expect.assertions(2);
     return mpm.getPinnedReference({
@@ -13,7 +13,7 @@ describe('Mpm Utils', () => {
       expect(reference).toBe('15.3.2');
     });
   });
-
+  
   it('getPinnedReference version', () => {
     expect.assertions(2);
     return mpm.getPinnedReference({
@@ -24,7 +24,7 @@ describe('Mpm Utils', () => {
       expect(reference).toBe('15.3.0');
     });
   });
-
+  
   it('getPinnedReference not version', () => {
     expect.assertions(2);
     return mpm.getPinnedReference({
@@ -35,7 +35,7 @@ describe('Mpm Utils', () => {
       expect(reference).toBe('/tmp/react-15.3.2.tar.gz');
     });
   });
-
+  
   it('getPinnedReference not found pacakge', () => {
     expect.assertions(1);
     return mpm.getPinnedReference({
@@ -45,7 +45,7 @@ describe('Mpm Utils', () => {
       expect(error).toEqual(new Error(`Couldn't fetch package "reacttt"`));
     });
   });
-
+  
   it('getPinnedReference not found version', () => {
     expect.assertions(1);
     return mpm.getPinnedReference({
@@ -55,7 +55,7 @@ describe('Mpm Utils', () => {
       expect(error).toEqual(new Error(`Couldn't find a version matching "~99.0.0" for package  "react"`));
     });
   });
-
+  
   it('fetchPackage react-16.4.0', () => {
     expect.assertions(2);
     return mpm.fetchPackage({
@@ -66,7 +66,7 @@ describe('Mpm Utils', () => {
       expect(buffer.length).toBeGreaterThan(255);
     });
   });
-
+  
   it('fetchPackage local file', () => {
     expect.assertions(2);
     return mpm.fetchPackage({
@@ -77,7 +77,7 @@ describe('Mpm Utils', () => {
       expect(buffer.length).toBeGreaterThan(255);
     });
   });
-
+  
   it('fetchPackage not found package', () => {
     expect.assertions(1);
     return mpm.fetchPackage({
@@ -87,4 +87,31 @@ describe('Mpm Utils', () => {
       expect(error instanceof Error).toBe(true);
     });
   });
+  
+  it('getPackageDependencies react-16.4.0', () => {
+    expect.assertions(4);
+    return mpm.getPackageDependencies({
+      name: 'react',
+      reference: '16.4.0'
+    }).then(({ dependencies, devDependencies }) => {
+      expect(Array.isArray(dependencies)).toBe(true);
+      expect(Array.isArray(devDependencies)).toBe(true);
+      expect(dependencies.length).toBeGreaterThan(3);
+      expect(devDependencies.length).toBe(0);
+    });
+  });
+
+  it('getPackageDependencies semver-5.5.0', () => {
+    expect.assertions(4);
+    return mpm.getPackageDependencies({
+      name: 'semver',
+      reference: '5.5.0'
+    }).then(({ dependencies, devDependencies }) => {
+      expect(Array.isArray(dependencies)).toBe(true);
+      expect(Array.isArray(devDependencies)).toBe(true);
+      expect(dependencies.length).toBe(0);
+      expect(devDependencies.length).toBe(1);
+    });
+  });
+
 });

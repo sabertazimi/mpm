@@ -5,6 +5,8 @@ const fetch = require('node-fetch');
 const semver = require('semver');
 const REGISTRY_URL = 'https://registry.npm.taobao.org';
 
+const readPackageJsonFromArchive = require('./utils.js').readPackageJsonFromArchive;
+
 class Mpm {
   constructor(config) {
     this.config = config || {};
@@ -53,6 +55,22 @@ class Mpm {
     }
 
     return await response.buffer();
+  }
+
+  async getPackageDependencies({ name, reference }) {
+    const packageBuffer = await this.fetchPackage({ name, reference });
+    const packageJson = JSON.parse(await readPackageJsonFromArchive(packageBuffer));
+    const dependencies = packageJson.dependencies || {};
+    const devDependencies = packageJson.devDependencies || {};
+
+    return {
+      dependencies: Object.keys(dependencies).map((name) => {
+        return { name, reference: dependencies[name] };
+      }),
+      devDependencies: Object.keys(devDependencies).map((name) => {
+        return { name, reference: devDependencies[name] };
+      })
+    };
   }
 }
 
