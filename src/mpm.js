@@ -133,8 +133,8 @@ class Mpm {
 
     // skipping root package
     if (reference) {
-      console.log(`> extracting ${name}-${reference} ...`);
       const packageBuffer = await this.fetchPackage({ name, reference });
+      console.log(`> extracting ${name}-${reference} ...`);
       await extractNpmArchiveTo(packageBuffer, cwd);
       console.log(`> ${name}-${reference} extracted.`);
     }
@@ -149,7 +149,7 @@ class Mpm {
         const dependencyPackageJson = require(`${target}/package.json`);
 
         // create binaries symbol link defined in 'bin' field
-        const bin = dependencyPackageJson.bin || {};
+        let bin = dependencyPackageJson.bin || {};
   
         if (typeof bin === `string`) {
           bin = { [name]: bin };
