@@ -1,10 +1,15 @@
-const fs = require('fs-extra');
+const util = require('util');
+const path = require('path');
+const cp = require('child_process');
+const exec = util.promisify(cp.exec);
 
+const fs = require('fs-extra');
 const fetch = require('node-fetch');
 const semver = require('semver');
 
 const REGISTRY_URL = 'https://registry.npmjs.org';
 const readPackageJsonFromArchive = require('./utils.js').readPackageJsonFromArchive;
+const extractNpmArchiveTo =  require('./utils.js').extractNpmArchiveTo;
 
 class Mpm {
   constructor(config) {
@@ -115,6 +120,74 @@ class Mpm {
           })
       )
     };
+  }
+
+  async linkPackages({ name, reference, dependencies }, cwd) {
+    const dependencyTree = await this.getPackageDependencyTree({
+      name,
+      reference,
+      dependencies
+    });
+     
+    await fs.mkdirp(`${cwd}/node_modules`);
+
+    // skipping root package
+    if (reference) {
+      console.log(`> extracting ${name}-${reference} ...`);
+      const packageBuffer = await this.fetchPackage({ name, reference });
+      await extractNpmArchiveTo(packageBuffer, cwd);
+      console.log(`> ${name}-${reference} extracted.`);
+    }
+
+    await Promise.all(
+      dependencyTree.dependencies.map(async ({ name, reference, dependencies }) => {
+        const target = `${cwd}/node_modules/${name}`;
+        const binTarget = `${cwd}/node_modules/.bin`;
+  
+        await this.linkPackages({ name, reference, dependencies }, target);
+  
+        const dependencyPackageJson = require(`${target}/package.json`);
+
+        // create binaries symbol link defined in 'bin' field
+        const bin = dependencyPackageJson.bin || {};
+  
+        if (typeof bin === `string`) {
+          bin = { [name]: bin };
+        }
+  
+        for (let binName of Object.keys(bin)) {
+          const source = path.resolve(target, bin[binName]);
+          const dest = `${binTarget}/${binName}`;
+  
+          await fs.mkdirp(`${cwd}/node_modules/.bin`);
+          fs.access(dest, (err) => {
+            if (err) {
+              fs.symlink(path.relative(binTarget, source), dest);
+              return;
+            }
+          });
+        }
+
+        // execute sciprts defined in 'scripts' field
+        if (dependencyPackageJson.scripts) {
+          for (let scriptName of [`preinstall`, `install`, `postinstall`]) {
+            const script = dependencyPackageJson.scripts[scriptName];
+  
+            if (!script) {
+              continue;
+            }
+  
+            await exec(script, {
+              cwd: target,
+              env: {
+                ...process.env, 
+                PATH: `${target}/node_modules/.bin:${process.env.PATH}`
+              },
+            });
+          }
+        }
+      })
+    );
   }
 }
 

@@ -17,8 +17,12 @@ packageJson.dependencies = Object.keys(packageJson.dependencies || {}).map(name 
     };
 });
 
-mpm.getPackageDependencyTree(packageJson).then(tree => {
-    log.debug(util.inspect(tree, { depth: Infinity }));
-}).catch(error => {
+// mpm.getPackageDependencyTree(packageJson).then(tree => {
+//     log.debug(util.inspect(tree, { depth: Infinity }));
+// }).catch(error => {
+//     log.error(error.message);
+// });
+
+mpm.linkPackages(packageJson, `${process.cwd()}/temp`).catch(error => {
     log.error(error.message);
 });

@@ -1,5 +1,6 @@
 const gunzipMaybe = require('gunzip-maybe');
 const tar = require('tar-stream');
+const tarFs = require('tar-fs');
 
 function getFileName(entryName, virtualPath) {
     // remove prefix '/'
@@ -53,7 +54,31 @@ async function readPackageJsonFromArchive(packageBuffer) {
     return await readFileFromArchive('package.json', packageBuffer, { virtualPath: 1 });
 }
 
+async function extractArchiveTo(packageBuffer, target, {virtualPath = 0} = {}) {
+    return new Promise((resolve, rejects) => {
+        const map = (header) => {
+            header.name = getFileName(header.name, virtualPath);
+            return header;
+        }
+
+        let gunzipper = gunzipMaybe();
+        let extractor = tarFs.extract(target, { map });
+        gunzipper.pipe(extractor);
+
+        extractor.on(`error`, error => rejects(error));
+        extractor.on(`finish`, () => resolve());
+        gunzipper.on('error', error => rejects(error));
+        gunzipper.write(packageBuffer);
+        gunzipper.end();
+    });
+}
+
+async function extractNpmArchiveTo(packageBuffer, target) {
+    return await extractArchiveTo(packageBuffer, target, { virtualPath: 1 });
+}
+
 module.exports = {
     readFileFromArchive,
-    readPackageJsonFromArchive
+    readPackageJsonFromArchive,
+    extractNpmArchiveTo
 };
