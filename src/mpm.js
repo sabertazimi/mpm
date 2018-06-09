@@ -3,7 +3,7 @@ const fs = require('fs-extra');
 const fetch = require('node-fetch');
 const semver = require('semver');
 
-const REGISTRY_URL = 'https://registry.npm.taobao.org';
+const REGISTRY_URL = 'https://registry.npmjs.org';
 const readPackageJsonFromArchive = require('./utils.js').readPackageJsonFromArchive;
 
 class Mpm {
@@ -76,20 +76,43 @@ class Mpm {
     };
   }
 
-  async getPackageDependencyTree({ name, reference, dependencies }) {
+  async getPackageDependencyTree(
+    { name, reference, dependencies },
+    available = new Map()
+  ) {
     return {
       name,
       reference,
       dependencies: await Promise.all(
-        dependencies.map(async volatileDependency => {
-          const pinnedDependency = await this.getPinnedReference(volatileDependency);
-          const { dependencies: subDependencies } = await this.getPackageDependencies(pinnedDependency);
+        dependencies
+          .filter(volatileDependency => {
+            const availableReference = available.get(volatileDependency.name);
+            
+            // exactly match, no need for copy package
+            if (volatileDependency.reference === availableReference) {
+              return false;
+            }
 
-          return await this.getPackageDependencyTree({
-            ...pinnedDependency,
-            dependencies: subDependencies
-          });
-        })
+            if (semver.validRange(volatileDependency.reference) &&
+              semver.satisfies(availableReference, volatileDependency.reference)
+            ) {
+              return false;
+            }
+
+            return true;
+          })
+          .map(async volatileDependency => {
+            const pinnedDependency = await this.getPinnedReference(volatileDependency);
+            const { dependencies: subDependencies } = await this.getPackageDependencies(pinnedDependency);
+            const subAvailable = new Map(available);
+
+            subAvailable.set(pinnedDependency.name, pinnedDependency.reference);
+
+            return await this.getPackageDependencyTree({
+              ...pinnedDependency,
+              dependencies: subDependencies,
+            }, subAvailable);
+          })
       )
     };
   }
