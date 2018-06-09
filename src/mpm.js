@@ -1,10 +1,9 @@
-'use strict'
-
 const fs = require('fs-extra');
+
 const fetch = require('node-fetch');
 const semver = require('semver');
-const REGISTRY_URL = 'https://registry.npm.taobao.org';
 
+const REGISTRY_URL = 'https://registry.npm.taobao.org';
 const readPackageJsonFromArchive = require('./utils.js').readPackageJsonFromArchive;
 
 class Mpm {
@@ -18,6 +17,10 @@ class Mpm {
 
       if (!response.ok) {
         throw new Error(`Couldn't fetch package "${name}"`);
+      }
+      
+      if (response.status === 204) {
+        throw new Error('HTTP 204');
       }
 
       const info = await response.json();
@@ -70,6 +73,24 @@ class Mpm {
       devDependencies: Object.keys(devDependencies).map((name) => {
         return { name, reference: devDependencies[name] };
       })
+    };
+  }
+
+  async getPackageDependencyTree({ name, reference, dependencies }) {
+    return {
+      name,
+      reference,
+      dependencies: await Promise.all(
+        dependencies.map(async volatileDependency => {
+          const pinnedDependency = await this.getPinnedReference(volatileDependency);
+          const { dependencies: subDependencies } = await this.getPackageDependencies(pinnedDependency);
+
+          return await this.getPackageDependencyTree({
+            ...pinnedDependency,
+            dependencies: subDependencies
+          });
+        })
+      )
     };
   }
 }
