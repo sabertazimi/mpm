@@ -6,6 +6,7 @@ const exec = util.promisify(cp.exec);
 const fs = require('fs-extra');
 const fetch = require('node-fetch');
 const semver = require('semver');
+const ora = require('ora');
 
 const REGISTRY_URL = 'https://registry.npmjs.org';
 const readPackageJsonFromArchive = require('./utils.js').readPackageJsonFromArchive;
@@ -134,9 +135,9 @@ class Mpm {
     // skipping root package
     if (reference) {
       const packageBuffer = await this.fetchPackage({ name, reference });
-      console.log(`> extracting ${name}-${reference} ...`);
+      const spinner = ora(`Extracting ${name}-${reference} ...`).start();
       await extractNpmArchiveTo(packageBuffer, cwd);
-      console.log(`> ${name}-${reference} extracted.`);
+      spinner.succeed();
     }
 
     if (dependencyTree.dependencies.length) {
