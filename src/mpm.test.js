@@ -1,8 +1,6 @@
-const Mpm = require('./mpm.js');
+const mpm = require('./mpm.js');
 
 describe('Mpm Utils', () => {
-  const mpm = new Mpm();
-  
   it('getPinnedReference ~version', () => {
     expect.assertions(2);
     return mpm.getPinnedReference({
@@ -114,4 +112,21 @@ describe('Mpm Utils', () => {
     });
   });
 
+  it('getPackageDependencyTree mpm-0.1.0', () => {
+    jest.setTimeout(30000);    
+    const packageDependencies = [{
+      name: 'semver',
+      reference: '5.5.0'
+    }];
+    expect.assertions(3);
+    return mpm.getPackageDependencyTree({
+      name: 'mpm',
+      reference: null,
+      dependencies: packageDependencies
+    }).then(({ name, reference, dependencies }) => {
+      expect(name).toBe('mpm');
+      expect(Array.isArray(dependencies)).toBe(true);
+      expect(dependencies.length).toBe(1);
+    });
+  });
 });

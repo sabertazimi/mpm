@@ -1,6 +1,6 @@
 {
   "name": "mpm",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Minimal package manager",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sabertazimi/mpm.git"
+  },
+  "engines": {
+    "node": ">=9"
   },
   "keywords": [
     "yarn",
@@ -22,10 +25,14 @@
     "url": "https://github.com/sabertazimi/mpm/issues"
   },
   "homepage": "https://github.com/sabertazimi/mpm#readme",
+  "bin": {
+    "mpm": "./src/index.js"
+  },
   "jest": {
     "collectCoverageFrom": [
       "src/*.{js}",
-      "!**/index.js"
+      "!**/index.js",
+      "!**/utils.js"
     ]
   },
   "dependencies": {

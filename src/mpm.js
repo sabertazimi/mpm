@@ -128,7 +128,7 @@ class Mpm {
       reference,
       dependencies
     });
-     
+
     await fs.mkdirp(`${cwd}/node_modules`);
 
     // skipping root package
@@ -139,56 +139,60 @@ class Mpm {
       console.log(`> ${name}-${reference} extracted.`);
     }
 
-    await Promise.all(
-      dependencyTree.dependencies.map(async ({ name, reference, dependencies }) => {
-        const target = `${cwd}/node_modules/${name}`;
-        const binTarget = `${cwd}/node_modules/.bin`;
+    if (dependencyTree.dependencies.length) {
+      await Promise.all(
+        dependencyTree.dependencies.map(async ({ name, reference, dependencies }) => {
+          const target = `${cwd}/node_modules/${name}`;
+          const binTarget = `${cwd}/node_modules/.bin`;
   
-        await this.linkPackages({ name, reference, dependencies }, target);
+          await this.linkPackages({ name, reference, dependencies }, target);
   
-        const dependencyPackageJson = require(`${target}/package.json`);
+          const dependencyPackageJson = require(`${target}/package.json`);
 
-        // create binaries symbol link defined in 'bin' field
-        let bin = dependencyPackageJson.bin || {};
+          // create binaries symbol link defined in 'bin' field
+          let bin = dependencyPackageJson.bin || {};
   
-        if (typeof bin === `string`) {
-          bin = { [name]: bin };
-        }
+          if (typeof bin === `string`) {
+            bin = { [name]: bin };
+          }
   
-        for (let binName of Object.keys(bin)) {
-          const source = path.resolve(target, bin[binName]);
-          const dest = `${binTarget}/${binName}`;
+          for (let binName of Object.keys(bin)) {
+            const source = path.resolve(target, bin[binName]);
+            const dest = `${binTarget}/${binName}`;
   
-          await fs.mkdirp(`${cwd}/node_modules/.bin`);
-          fs.access(dest, (err) => {
-            if (err) {
-              fs.symlink(path.relative(binTarget, source), dest);
-              return;
-            }
-          });
-        }
-
-        // execute sciprts defined in 'scripts' field
-        if (dependencyPackageJson.scripts) {
-          for (let scriptName of [`preinstall`, `install`, `postinstall`]) {
-            const script = dependencyPackageJson.scripts[scriptName];
-  
-            if (!script) {
-              continue;
-            }
-  
-            await exec(script, {
-              cwd: target,
-              env: {
-                ...process.env, 
-                PATH: `${target}/node_modules/.bin:${process.env.PATH}`
-              },
+            await fs.mkdirp(`${cwd}/node_modules/.bin`);
+            fs.access(dest, (err) => {
+              if (err) {
+                fs.symlink(path.relative(binTarget, source), dest);
+                return;
+              }
             });
           }
-        }
-      })
-    );
+
+          // execute sciprts defined in 'scripts' field
+          if (dependencyPackageJson.scripts) {
+            for (let scriptName of [`preinstall`, `install`, `postinstall`]) {
+            const script = dependencyPackageJson.scripts[scriptName];
+  
+              if (!script) {
+                continue;
+              }
+  
+              await exec(script, {
+                cwd: target,
+                env: {
+                  ...process.env, 
+                  PATH: `${target}/node_modules/.bin:${process.env.PATH}`
+                },
+              });
+            }
+          }
+        })
+      );
+    }
   }
 }
 
-module.exports = Mpm;
+const mpm = new Mpm();
+
+module.exports = mpm;
