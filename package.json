@@ -1,5 +1,5 @@
 {
-  "name": "mpm",
+  "name": "mpmjs",
   "version": "0.1.0",
   "description": "Minimal package manager",
   "main": "index.js",

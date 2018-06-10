@@ -29,7 +29,7 @@ program
                 };
             });
 
-            mpm.linkPackages(packageJson, `${cwd}/temp`).catch(error => {
+            mpm.linkPackages(packageJson, `${cwd}`).catch(error => {
                 log.error(error.message);
             });
         }
