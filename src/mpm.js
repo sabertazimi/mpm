@@ -14,6 +14,7 @@ const extractNpmArchiveTo =  require('./utils.js').extractNpmArchiveTo;
 
 class Mpm {
   constructor(config) {
+    // config
     this.config = config || {};
   }
 
