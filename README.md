@@ -1,7 +1,7 @@
 # mpm
 
 [![Author](https://img.shields.io/badge/author-sabertaz-lightgrey?style=for-the-badge)](https://github.com/sabertazimi)
-[![LICENSE](https://img.shields.io/github/license/sabertazimi/mpm?style=for-the-badge)](https://raw.githubusercontent.com/sabertazimi/bod/master/LICENSE)
+[![LICENSE](https://img.shields.io/github/license/sabertazimi/mpm?style=for-the-badge)](https://raw.githubusercontent.com/sabertazimi/mpm/master/LICENSE)
 
 [![Code Lines](https://img.shields.io/tokei/lines/github/sabertazimi/mpm?style=for-the-badge&logo=visualstudiocode)](https://github.com/sabertazimi/mpm)
 [![Codecov](https://img.shields.io/codecov/c/github/sabertazimi/mpm/master?logo=codecov&style=for-the-badge)](https://app.codecov.io/gh/sabertazimi/mpm)
